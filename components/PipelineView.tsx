@@ -27,112 +27,112 @@ const PipelineView: React.FC<Props> = ({ isActive }) => {
   };
 
   return (
-    <div className="flex-1 bg-[#050505] p-10 overflow-y-auto space-y-12 animate-in fade-in duration-700 pb-32">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[#30363d] pb-10">
-        <div className="space-y-4">
-          <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Continuity <span className="text-[#3fb950]">Guard</span></h2>
-          <p className="text-[#8b949e] max-w-2xl font-medium mt-4">GitOps Governance. Automatically enforcing architectural invariants on every PR.</p>
+    <div className="flex-1 bg-[#0d1117] p-6 overflow-y-auto pb-44">
+      <header className="flex justify-between items-start mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2">CONTINUITY <span className="text-[#3fb950]">GUARD</span></h2>
+          <p className="text-gray-500 text-sm">GitOps Governance. Automatically enforcing architectural invariants on every PR.</p>
         </div>
-        <div className="bg-[#3fb95011] border border-[#3fb95033] px-8 py-4 rounded-[30px] flex flex-col items-end">
-           <div className="text-[10px] font-black text-[#3fb950] uppercase tracking-widest">Pipeline Health</div>
-           <div className="text-2xl font-black text-white italic tracking-tighter">99.4% UPTIME</div>
+        <div className="bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-lg text-right">
+           <div className="text-[10px] font-bold text-green-400 uppercase tracking-wider">Pipeline Health</div>
+           <div className="text-lg font-black text-white">99.4% UPTIME</div>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-         <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         <div className="lg:col-span-2 space-y-6">
             {/* Live Pipeline Steps */}
-            <div className="space-y-4">
-              <h3 className="text-[11px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2">
-                 <RocketIcon /> Active Deployment Stages
+            <div className="space-y-3">
+              <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                 <RocketIcon className="w-3 h-3" /> Active Deployment Stages
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {steps.map((step) => (
-                  <div key={step.id} className="bg-[#0d1117] border border-[#30363d] p-6 rounded-[30px] flex items-center justify-between group hover:border-white/20 transition-all">
-                    <div className="flex items-center gap-6">
-                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                         step.status === 'success' ? 'bg-[#3fb95022] text-[#3fb950]' :
-                         step.status === 'running' ? 'bg-[#2f81f722] text-[#2f81f7] animate-pulse' :
-                         'bg-[#161b22] text-[#484f58]'
+                  <div key={step.id} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 flex items-center justify-between hover:border-[#58a6ff]/50 transition-all">
+                    <div className="flex items-center gap-4">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                         step.status === 'success' ? 'bg-green-500/20 text-green-400' :
+                         step.status === 'running' ? 'bg-blue-500/20 text-blue-400 animate-pulse' :
+                         'bg-[#21262d] text-gray-600'
                        }`}>
-                          {step.status === 'success' ? <ShieldIcon /> : <CpuIcon />}
+                          {step.status === 'success' ? <ShieldIcon className="w-4 h-4" /> : <CpuIcon className="w-4 h-4" />}
                        </div>
                        <div>
-                          <div className="text-sm font-black text-white uppercase italic tracking-tight">{step.name}</div>
-                          <div className="text-[9px] font-bold text-[#8b949e] uppercase tracking-widest">Stage {step.id} • {step.status}</div>
+                          <div className="text-xs font-bold text-white">{step.name}</div>
+                          <div className="text-[10px] text-gray-500">Stage {step.id} • {step.status}</div>
                        </div>
                     </div>
-                    {step.duration && <div className="text-[10px] font-mono text-[#484f58]">{step.duration}</div>}
+                    {step.duration && <div className="text-[10px] font-mono text-gray-600">{step.duration}</div>}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* GitHub Action Snippet */}
-            <div className="space-y-6">
+            <div className="space-y-3">
                <div className="flex justify-between items-center">
-                  <h3 className="text-[11px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2">
-                     <TerminalIcon /> GitHub Action Configuration
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                     <TerminalIcon className="w-3 h-3" /> GitHub Action Configuration
                   </h3>
                   <button 
                     onClick={handleCopyYaml}
-                    className="text-[9px] font-black text-[#2f81f7] uppercase tracking-widest hover:underline"
+                    className="text-[10px] font-semibold text-[#58a6ff] uppercase tracking-wider hover:underline"
                   >
                     COPY WORKFLOW YAML
                   </button>
                </div>
-               <div className="bg-[#161b22] p-8 rounded-[40px] border border-white/5 relative group overflow-hidden">
-                  <pre className="font-mono text-[11px] text-[#8b949e] leading-relaxed custom-scrollbar overflow-x-auto">
+               <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 overflow-hidden">
+                  <pre className="font-mono text-[10px] text-gray-400 leading-relaxed overflow-x-auto">
                      {GITHUB_ACTION_YAML}
                   </pre>
                </div>
             </div>
          </div>
 
-         <div className="space-y-8">
-            <div className="glass-card p-10 rounded-[50px] bg-[#161b22]/50 border-white/5 space-y-8">
-               <h3 className="text-xl font-black text-white italic uppercase tracking-tighter underline decoration-[#3fb950] decoration-4 underline-offset-8">Integration Guide</h3>
+         <div className="space-y-4">
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 space-y-4">
+               <h3 className="text-sm font-bold text-white">Integration Guide</h3>
                
-               <div className="space-y-6">
-                  <div className="space-y-2">
-                     <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2">
-                        <LinkIcon /> 1. Generate API Key
+               <div className="space-y-4">
+                  <div className="space-y-1">
+                     <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                        <LinkIcon className="w-3 h-3" /> 1. Generate API Key
                      </div>
-                     <p className="text-xs text-[#c9d1d9] leading-relaxed">Create a project-scoped key in the ArchLens dashboard to anchor the memory.</p>
+                     <p className="text-xs text-gray-400">Create a project-scoped key in the ArchLens dashboard.</p>
                   </div>
                   
-                  <div className="space-y-2">
-                     <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2">
-                        <LockIcon /> 2. Set GitHub Secret
+                  <div className="space-y-1">
+                     <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                        <LockIcon className="w-3 h-3" /> 2. Set GitHub Secret
                      </div>
-                     <p className="text-xs text-[#c9d1d9] leading-relaxed">Add <code>ARCHLENS_API_KEY</code> to your repository secrets.</p>
+                     <p className="text-xs text-gray-400">Add <code className="text-[#58a6ff]">ARCHLENS_API_KEY</code> to your repository secrets.</p>
                   </div>
 
-                  <div className="space-y-2">
-                     <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2">
-                        <RocketIcon /> 3. Deploy Workflow
+                  <div className="space-y-1">
+                     <div className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                        <RocketIcon className="w-3 h-3" /> 3. Deploy Workflow
                      </div>
-                     <p className="text-xs text-[#c9d1d9] leading-relaxed">Commit the YAML above to <code>.github/workflows/</code> to start automated guarding.</p>
+                     <p className="text-xs text-gray-400">Commit the YAML to <code className="text-[#58a6ff]">.github/workflows/</code></p>
                   </div>
                </div>
 
-               <div className="bg-[#f851490a] border border-[#f8514922] p-6 rounded-3xl space-y-2">
-                  <div className="flex items-center gap-2 text-[#f85149]">
-                     <AlertIcon />
-                     <span className="text-[9px] font-black uppercase">Failure Threshold</span>
+               <div className="bg-red-500/5 border border-red-500/20 p-3 rounded-lg space-y-1">
+                  <div className="flex items-center gap-2 text-red-400">
+                     <AlertIcon className="w-3 h-3" />
+                     <span className="text-[10px] font-bold uppercase">Failure Threshold</span>
                   </div>
-                  <p className="text-[10px] text-[#8b949e] italic leading-relaxed">
-                     By default, builds will fail if any "Error" level architectural invariant is violated.
+                  <p className="text-[10px] text-gray-500">
+                     Builds fail if any "Error" level invariant is violated.
                   </p>
                </div>
             </div>
 
-            <div className="p-8 bg-[#2f81f70a] border border-[#2f81f722] rounded-[40px] space-y-4">
-               <div className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-                  <ShieldIcon /> SOC2 Audit Proof
+            <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4 space-y-2">
+               <div className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-2">
+                  <ShieldIcon className="w-3 h-3" /> SOC2 Audit Proof
                </div>
-               <p className="text-[11px] text-[#8b949e] leading-relaxed italic">
-                  * Pipeline logs are cryptographically signed and archived for technical due diligence audits.
+               <p className="text-[10px] text-gray-500">
+                  Pipeline logs are cryptographically signed and archived for audits.
                </p>
             </div>
          </div>

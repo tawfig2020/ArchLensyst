@@ -5,11 +5,14 @@ import * as gemini from './geminiService';
 export type FixStatus = 'idle' | 'generating' | 'ready' | 'error';
 
 export class InvariantAutoFixerService {
-  private static instance: InvariantAutoFixerService;
-  private activeFixes: Map<string, { fix?: SyntheticFix; status: FixStatus }> = new Map();
-  private isProcessing: boolean = false;
+  private static instance: InvariantAutoFixerService | undefined;
+  private activeFixes: Map<string, { fix?: SyntheticFix; status: FixStatus }>;
+  private isProcessing: boolean;
 
-  private constructor() {}
+  private constructor() {
+    this.activeFixes = new Map();
+    this.isProcessing = false;
+  }
 
   public static getInstance(): InvariantAutoFixerService {
     if (!InvariantAutoFixerService.instance) {

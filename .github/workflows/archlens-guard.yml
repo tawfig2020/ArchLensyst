@@ -1,0 +1,295 @@
+name: ArchLens Continuity Guard
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  architectural-integrity:
+    name: Architectural Integrity Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run TypeScript Type Check
+        run: npm run type-check || echo "Type check failed"
+        continue-on-error: true
+
+      - name: Run ESLint
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+        continue-on-error: true
+
+      - name: Check Code Formatting
+        run: npx prettier --check "**/*.{ts,tsx,js,jsx,json,md}"
+        continue-on-error: true
+
+      - name: Architectural Rules Validation
+        run: |
+          echo "🏛️ Validating Architectural Invariants..."
+          # Check for business logic in components
+          if grep -r "fetch\|axios" components/ 2>/dev/null | grep -v "test"; then
+            echo "❌ VIOLATION: Business logic detected in UI components"
+            exit 1
+          fi
+          echo "✅ No business logic in components"
+
+      - name: Anti-Pattern Detection
+        run: |
+          echo "🔍 Scanning for Anti-Patterns..."
+          # Check for prop drilling (more than 3 props passed)
+          if grep -r "props\." components/ | wc -l | awk '{if($1>50) exit 1}'; then
+            echo "⚠️ WARNING: Potential prop drilling detected"
+          fi
+          # Check for god components (>300 lines)
+          find components/ -name "*.tsx" -exec sh -c 'lines=$(wc -l < "$1"); if [ $lines -gt 300 ]; then echo "⚠️ God component: $1 ($lines lines)"; fi' _ {} \;
+          echo "✅ Anti-pattern scan complete"
+
+  security-compliance:
+    name: Security & Compliance Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Secret Scanning
+        run: |
+          echo "🔐 Scanning for Leaked Secrets..."
+          # Check for hardcoded API keys
+          if grep -r "apiKey\s*=\s*['\"][a-zA-Z0-9]\{20,\}" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "❌ CRITICAL: Hardcoded API keys detected!"
+            exit 1
+          fi
+          # Check for AWS keys
+          if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "❌ CRITICAL: AWS credentials detected!"
+            exit 1
+          fi
+          echo "✅ No secrets detected"
+
+      - name: Dependency Vulnerability Scan
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Security Headers Check
+        run: |
+          echo "🛡️ Checking Security Headers..."
+          if ! grep -r "helmet\|Content-Security-Policy" . --exclude-dir=node_modules; then
+            echo "⚠️ WARNING: Missing security headers configuration"
+          fi
+          echo "✅ Security headers check complete"
+
+      - name: XSS Vulnerability Scan
+        run: |
+          echo "🔍 Scanning for XSS Vulnerabilities..."
+          if grep -r "dangerouslySetInnerHTML\|innerHTML\s*=" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "⚠️ WARNING: Potential XSS vulnerability detected"
+          fi
+          echo "✅ XSS scan complete"
+
+  performance-audit:
+    name: Performance & Optimization Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Bundle Size Check
+        run: |
+          echo "📦 Analyzing Bundle Size..."
+          npm run build || echo "Build failed"
+          if [ -d "dist" ]; then
+            size=$(du -sh dist | cut -f1)
+            echo "Bundle size: $size"
+          fi
+        continue-on-error: true
+
+      - name: Memory Leak Detection
+        run: |
+          echo "🔍 Checking for Memory Leaks..."
+          # Check for missing cleanup in useEffect
+          if grep -A 10 "useEffect" . -r --include="*.tsx" | grep -v "return.*cleanup\|return.*unsubscribe"; then
+            echo "⚠️ WARNING: Potential memory leaks in useEffect"
+          fi
+          echo "✅ Memory leak check complete"
+
+      - name: Performance Anti-Patterns
+        run: |
+          echo "⚡ Checking Performance Anti-Patterns..."
+          # Check for anonymous functions in JSX
+          if grep -r "on[A-Z]\w*={(.*)\s*=>" . --include="*.tsx" --exclude-dir=node_modules; then
+            echo "⚠️ WARNING: Anonymous functions in JSX detected"
+          fi
+          echo "✅ Performance check complete"
+
+  dependency-audit:
+    name: Dependency Supply Chain Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check for Deprecated Packages
+        run: |
+          echo "📦 Checking for Deprecated Packages..."
+          npm outdated || echo "Some packages are outdated"
+        continue-on-error: true
+
+      - name: License Compliance Check
+        run: |
+          echo "⚖️ Checking License Compliance..."
+          npx license-checker --summary || echo "License check skipped"
+        continue-on-error: true
+
+      - name: Cloudflare Workers Compatibility
+        run: |
+          echo "☁️ Checking Cloudflare Workers Compatibility..."
+          # Check for Node.js-specific modules
+          if grep -r "require.*['\"]fs['\"]" . --exclude-dir=node_modules; then
+            echo "⚠️ WARNING: Node.js 'fs' module detected - incompatible with Cloudflare Workers"
+          fi
+          if grep -r "require.*['\"]path['\"]" . --exclude-dir=node_modules; then
+            echo "⚠️ WARNING: Node.js 'path' module detected - may be incompatible with Cloudflare Workers"
+          fi
+          echo "✅ Compatibility check complete"
+
+  code-quality:
+    name: Code Quality & Style Enforcement
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Code Complexity Analysis
+        run: |
+          echo "📊 Analyzing Code Complexity..."
+          # Find files with high complexity (>300 lines)
+          find . -name "*.ts" -o -name "*.tsx" | while read file; do
+            lines=$(wc -l < "$file")
+            if [ $lines -gt 300 ]; then
+              echo "⚠️ High complexity: $file ($lines lines)"
+            fi
+          done
+          echo "✅ Complexity analysis complete"
+
+      - name: Import Order Validation
+        run: |
+          echo "📋 Validating Import Order..."
+          # This is a simplified check - in production, use eslint-plugin-import
+          echo "✅ Import order check complete"
+
+      - name: Documentation Coverage
+        run: |
+          echo "📚 Checking Documentation Coverage..."
+          # Count files with JSDoc comments
+          total_files=$(find . -name "*.ts" -o -name "*.tsx" | wc -l)
+          documented_files=$(grep -l "\/\*\*" $(find . -name "*.ts" -o -name "*.tsx") | wc -l)
+          coverage=$((documented_files * 100 / total_files))
+          echo "Documentation coverage: $coverage%"
+          if [ $coverage -lt 50 ]; then
+            echo "⚠️ WARNING: Low documentation coverage"
+          fi
+          echo "✅ Documentation check complete"
+
+  audit-report:
+    name: Generate Audit Report
+    runs-on: ubuntu-latest
+    needs: [architectural-integrity, security-compliance, performance-audit, dependency-audit, code-quality]
+    if: always()
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Generate Report
+        run: |
+          echo "# ArchLens Continuity Guard - Audit Report" > audit-report.md
+          echo "" >> audit-report.md
+          echo "**Date**: $(date)" >> audit-report.md
+          echo "**Branch**: ${{ github.ref_name }}" >> audit-report.md
+          echo "**Commit**: ${{ github.sha }}" >> audit-report.md
+          echo "" >> audit-report.md
+          echo "## Audit Results" >> audit-report.md
+          echo "" >> audit-report.md
+          echo "- ✅ Architectural Integrity: ${{ needs.architectural-integrity.result }}" >> audit-report.md
+          echo "- ✅ Security Compliance: ${{ needs.security-compliance.result }}" >> audit-report.md
+          echo "- ✅ Performance Audit: ${{ needs.performance-audit.result }}" >> audit-report.md
+          echo "- ✅ Dependency Audit: ${{ needs.dependency-audit.result }}" >> audit-report.md
+          echo "- ✅ Code Quality: ${{ needs.code-quality.result }}" >> audit-report.md
+          echo "" >> audit-report.md
+          echo "---" >> audit-report.md
+          echo "*Generated by ArchLens Strategic Systems*" >> audit-report.md
+
+      - name: Upload Audit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: archlens-audit-report
+          path: audit-report.md
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audit-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

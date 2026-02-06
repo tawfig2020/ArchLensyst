@@ -7,25 +7,33 @@
 import { DatabaseStatus, UserProfile, BillingEvent } from '../types';
 
 class MongoDBPersistentService {
-  private static instance: MongoDBPersistentService;
-  private status: DatabaseStatus = {
-    connected: false,
-    lastSync: '',
-    pendingTransactions: 0,
-    clusterHealth: 'offline',
-    clusterId: 'ArchLensSentinel'
-  };
-
-  // Environment Anchor (Assumed pre-configured in production)
-  private readonly config = {
-    apiKey: (process.env as any).MONGODB_DATA_API_KEY || 'N/A',
-    url: (process.env as any).MONGODB_URL || '',
-    cluster: (process.env as any).MONGODB_CLUSTER || 'ArchLensSentinel',
-    database: (process.env as any).MONGODB_DATABASE || 'archlens_vault',
-    dataSource: 'mongodb-atlas'
+  private static instance: MongoDBPersistentService | undefined;
+  private status: DatabaseStatus;
+  private readonly config: {
+    apiKey: string;
+    url: string;
+    cluster: string;
+    database: string;
+    dataSource: string;
   };
 
   private constructor() {
+    this.status = {
+      connected: false,
+      lastSync: '',
+      pendingTransactions: 0,
+      clusterHealth: 'offline',
+      clusterId: 'ArchLensSentinel'
+    };
+    
+    this.config = {
+      apiKey: import.meta.env.MONGODB_DATA_API_KEY || 'N/A',
+      url: import.meta.env.MONGODB_URL || '',
+      cluster: import.meta.env.MONGODB_CLUSTER || 'ArchLensSentinel',
+      database: import.meta.env.MONGODB_DATABASE || 'archlens_vault',
+      dataSource: 'mongodb-atlas'
+    };
+    
     this.initializeOfflineQueue();
   }
 

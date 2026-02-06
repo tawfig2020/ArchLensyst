@@ -40,16 +40,16 @@ const AuditView: React.FC<Props> = ({ codebase, rules, onAuditStarted, onDrillDo
   };
 
   return (
-    <div className="flex-1 bg-[#050505] p-10 overflow-y-auto space-y-12 animate-in fade-in duration-700">
-      <header className="flex justify-between items-end border-b border-[#30363d] pb-10">
+    <div className="flex-1 bg-[#0d1117] p-6 overflow-y-auto pb-44">
+      <header className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Deep <span className="text-[#f85149]">Audit</span></h2>
-          <p className="text-[#8b949e] max-w-2xl font-medium mt-4">Structural Scrutiny. Flagging Monoliths, Cycles, and God Objects before they commit.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">DEEP <span className="text-[#f85149]">SCRUTINY</span></h2>
+          <p className="text-gray-500 text-sm">Structural Scrutiny. Flagging Monoliths, Cycles, and God Objects before they commit.</p>
         </div>
         {!report && !isAuditing && (
           <button 
             onClick={handleStartAudit}
-            className="bg-[#f85149] text-white px-12 py-5 rounded-[30px] font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#f8514933]"
+            className="bg-[#f85149] hover:bg-[#da3633] text-white px-6 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             SCAN MONOLITH RISKS
           </button>
@@ -57,60 +57,58 @@ const AuditView: React.FC<Props> = ({ codebase, rules, onAuditStarted, onDrillDo
       </header>
 
       {report && (
-        <div className="space-y-12 animate-in slide-in-from-bottom-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-[#161b22] p-10 rounded-[50px] border border-white/5 space-y-8 group hover:border-[#f8514933] transition-all">
-               <h3 className="text-[12px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                  <ShieldIcon /> Structural Toxicity
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 hover:border-red-500/30 transition-all">
+               <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-4">
+                  <ShieldIcon className="w-3 h-3" /> Structural Toxicity
                </h3>
-               <div className="flex items-center gap-10">
-                  <div className="relative w-32 h-32">
+               <div className="flex items-center gap-6">
+                  <div className="relative w-20 h-20">
                      <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="64" cy="64" r="58" stroke="#30363d" strokeWidth="12" fill="transparent" />
-                        <circle cx="64" cy="64" r="58" stroke="#f85149" strokeWidth="12" fill="transparent" 
-                                strokeDasharray={364.4} strokeDashoffset={364.4 * (1 - (report.toxicity?.godObjectProbability || 0) / 100)} className="transition-all duration-1000" />
+                        <circle cx="40" cy="40" r="35" stroke="#30363d" strokeWidth="6" fill="transparent" />
+                        <circle cx="40" cy="40" r="35" stroke="#f85149" strokeWidth="6" fill="transparent" 
+                                strokeDasharray={220} strokeDashoffset={220 * (1 - (report.toxicity?.godObjectProbability || 0) / 100)} className="transition-all duration-1000" />
                      </svg>
-                     <div className="absolute inset-0 flex items-center justify-center text-3xl font-black text-white">{report.toxicity?.godObjectProbability || 0}%</div>
+                     <div className="absolute inset-0 flex items-center justify-center text-lg font-black text-white">{report.toxicity?.godObjectProbability || 0}%</div>
                   </div>
-                  <div className="flex-1 space-y-2">
-                     <div className="text-xl font-black text-white italic">God Object Risk</div>
-                     <p className="text-sm text-[#8b949e] leading-relaxed">System complexity is concentrating in too few nodes.</p>
+                  <div className="flex-1 space-y-1">
+                     <div className="text-sm font-bold text-white">God Object Risk</div>
+                     <p className="text-xs text-gray-500 leading-relaxed">System complexity is concentrating in too few nodes.</p>
                   </div>
                </div>
             </div>
-            <div className="bg-[#161b22] p-10 rounded-[50px] border border-white/5 space-y-6 flex flex-col justify-center">
-               <div className="flex justify-between items-center text-[10px] font-black text-[#8b949e] uppercase tracking-widest">
-                  <span>Spaghetti Factor</span>
-                  <span className="text-[#f85149] font-mono">{report.toxicity?.cyclicDepth || 0} Cycles</span>
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 space-y-4">
+               <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">Spaghetti Factor</span>
+                  <span className="text-red-400 font-bold">{report.toxicity?.cyclicDepth || 0} Cycles</span>
                </div>
-               <div className="flex justify-between items-center text-[10px] font-black text-[#8b949e] uppercase tracking-widest">
-                  <span>Logic Leakage</span>
-                  <span className="text-[#d29922] font-mono">{report.toxicity?.logicLeakageCount || 0} Bleeds</span>
+               <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">Logic Leakage</span>
+                  <span className="text-amber-400 font-bold">{report.toxicity?.logicLeakageCount || 0} Bleeds</span>
                </div>
-               <div className="flex justify-between items-center text-[10px] font-black text-[#8b949e] uppercase tracking-widest">
-                  <span>Entanglement</span>
-                  <span className="text-[#2f81f7] font-mono">{report.toxicity?.entanglementFactor?.toFixed(2) || '0.00'}</span>
+               <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">Entanglement</span>
+                  <span className="text-blue-400 font-bold">{report.toxicity?.entanglementFactor?.toFixed(2) || '0.00'}</span>
                </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-             <h3 className="text-[12px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2"><AlertIcon /> Findings Ledger</h3>
-             <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-4">
+             <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2"><AlertIcon className="w-3 h-3" /> Findings Ledger</h3>
+             <div className="grid grid-cols-1 gap-3">
                 {report.issues.map((issue) => (
                    <button 
                      key={issue.id} 
                      onClick={() => issue.file && onDrillDown?.(issue.file, issue.line)}
-                     className="w-full text-left bg-[#161b22] border border-[#30363d] p-8 rounded-[35px] space-y-4 hover:border-[#f8514966] transition-all group relative overflow-hidden"
+                     className="w-full text-left bg-[#161b22] border border-[#30363d] rounded-lg p-4 space-y-2 hover:border-red-500/30 transition-all"
                    >
-                      <div className="flex justify-between">
-                         <div className="flex items-center gap-3">
-                           <span className="text-[10px] font-black text-[#f85149] uppercase bg-[#f8514911] px-2 py-1 rounded border border-[#f8514922]">{issue.category}</span>
-                           {issue.file && <span className="text-[9px] text-[#484f58] font-mono uppercase tracking-widest">{issue.file}</span>}
-                         </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-red-400 uppercase bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">{issue.category}</span>
+                        {issue.file && <span className="text-[10px] text-gray-600 font-mono">{issue.file}</span>}
                       </div>
-                      <h4 className="text-lg font-black text-white italic">{issue.message}</h4>
-                      <div className="bg-[#0d1117] p-4 rounded-2xl border border-white/5 text-xs text-[#8b949e]">
+                      <h4 className="text-sm font-bold text-white">{issue.message}</h4>
+                      <div className="bg-[#0d1117] p-3 rounded-lg border border-[#30363d] text-xs text-gray-400">
                          "{issue.recommendation}"
                       </div>
                    </button>
@@ -121,9 +119,9 @@ const AuditView: React.FC<Props> = ({ codebase, rules, onAuditStarted, onDrillDo
       )}
 
       {isAuditing && (
-        <div className="h-[50vh] flex flex-col items-center justify-center space-y-8">
-           <div className="w-16 h-16 border-4 border-[#f85149]/30 border-t-[#f85149] rounded-full animate-spin" />
-           <p className="text-[12px] font-black text-[#f85149] uppercase tracking-[0.4em] animate-pulse">Running Structural Scrutiny...</p>
+        <div className="h-64 flex flex-col items-center justify-center space-y-4">
+           <div className="w-10 h-10 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+           <p className="text-xs font-semibold text-red-400 uppercase tracking-wider">Running Structural Scrutiny...</p>
         </div>
       )}
     </div>

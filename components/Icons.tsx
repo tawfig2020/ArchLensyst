@@ -6,8 +6,24 @@
 
 import React from 'react';
 
-const BaseIcon = ({ children, className = "w-5 h-5" }: { children?: React.ReactNode, className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+interface IconProps {
+  className?: string;
+  [key: string]: any;
+}
+
+const BaseIcon = ({ children, className = "w-5 h-5", ...rest }: { children?: React.ReactNode, className?: string, [key: string]: any }) => (
+  <svg 
+    className={className} 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    width="20"
+    height="20"
+    {...rest}
+  >
     {children}
   </svg>
 );

@@ -21,7 +21,7 @@ import {
 import DependencyGraph from './components/DependencyGraph';
 import Terminal from './components/Terminal';
 import Dashboard from './components/Dashboard';
-import LandingPage from './components/LandingPage';
+import HeroLanding from './components/HeroLanding';
 import CodeEditor from './components/CodeEditor';
 import SovereignVault from './components/SovereignVault';
 import UpgradeModal from './components/UpgradeModal';
@@ -273,31 +273,26 @@ const App: React.FC = () => {
   const currentViolations = refactorSuggestions.map(s => s.violation);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden text-sm bg-[#020202] flex-col select-none font-sans relative">
-      {/* Global Status Bar */}
+    <div className="h-screen w-screen overflow-hidden text-sm bg-[#0d1117] flex flex-col select-none font-sans">
+      {/* Top Navigation Bar - Match Image 4 */}
       {activeTab !== 'landing' && activeTab !== 'specs' && (
-        <div className="h-12 bg-[#0d1117] border-b border-[#30363d] flex items-center justify-between px-8 z-[60] glass-card">
-           <div className="flex items-center gap-10">
-              <div className="flex items-center gap-3">
-                 <div className={`w-2.5 h-2.5 rounded-full ${dbStatus.connected ? 'bg-[#3fb950] shadow-[0_0_10px_#3fb950]' : 'bg-[#f85149]'} animate-pulse`}></div>
-                 <span className="text-[11px] font-black text-white uppercase tracking-[0.3em] glow-text-blue">Citadel Secure Mode</span>
+        <div className="h-10 bg-[#010409] border-b border-[#30363d] flex items-center justify-between px-4 z-[60]">
+           <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1 rounded bg-red-500/10 border border-red-500/30">
+                 <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                 <span className="text-red-400 text-[10px] font-semibold uppercase tracking-wider">CITADEL SECURE MODE</span>
               </div>
-              <div className="h-5 w-px bg-[#30363d]"></div>
-              <div className="flex items-center gap-3 text-[#8b949e]">
-                 <span className="text-[10px] font-black uppercase tracking-widest">Logic Credits:</span>
-                 <span className={`text-[11px] font-mono font-black text-[#3fb950]`}>{currentUser.membership.tokens.total - currentUser.membership.tokens.consumed}</span>
+              <div className="flex items-center gap-2 px-3 py-1 rounded bg-green-500/10 border border-green-500/30">
+                 <span className="text-green-400 text-[10px] font-semibold uppercase tracking-wider">LOGIC CREDITS: {currentUser.membership.tokens.total - currentUser.membership.tokens.consumed}</span>
               </div>
-              <div className="h-5 w-px bg-[#30363d]"></div>
-              <div className="flex items-center gap-3">
-                 <div className="p-1.5 bg-[#2f81f711] text-[#2f81f7] rounded-lg border border-[#2f81f733]">
-                    <UserIcon className="w-3 h-3" />
-                 </div>
-                 <span className="text-[10px] font-black text-white uppercase tracking-widest">{persona.type} Mode</span>
+              <div className="flex items-center gap-2 px-3 py-1 rounded bg-blue-500/10 border border-blue-500/30">
+                 <UserIcon className="w-3 h-3 text-blue-400" />
+                 <span className="text-blue-400 text-[10px] font-semibold uppercase tracking-wider">SENIOR ARCHITECT MODE</span>
               </div>
            </div>
-           <div className="flex items-center gap-6">
-              <span className="text-[10px] font-black text-[#484f58] uppercase tracking-widest">Master Key: {currentUser.membership.signature.logicHash.slice(0, 12)}...</span>
-              <button onClick={() => setIsUpgradeModalOpen(true)} className="bg-white text-black px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-white/5">ELEVATE QUOTA</button>
+           <div className="flex items-center gap-3">
+              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">MASTER KEY: ARCHLENS_SEN...</span>
+              <button onClick={() => setIsUpgradeModalOpen(true)} className="bg-[#21262d] hover:bg-[#30363d] text-white px-4 py-1.5 rounded text-[10px] font-semibold border border-[#30363d] transition-colors uppercase tracking-wider">ELEVATE QUOTA</button>
            </div>
         </div>
       )}
@@ -305,36 +300,33 @@ const App: React.FC = () => {
       <div className="flex flex-1 overflow-hidden relative">
         {/* Authoritative Sidebar V2 */}
         {activeTab !== 'landing' && activeTab !== 'specs' && (
-          <div className="w-72 bg-[#0d1117] flex flex-col border-r border-[#30363d] shrink-0 z-50 overflow-hidden glass-card">
-            <div className="p-8 flex items-center justify-between border-b border-white/5 bg-[#161b22]/30">
-               <div className="text-[#2f81f7] font-black italic text-2xl tracking-tighter cursor-pointer hover:scale-105 transition-transform glow-text-blue" onClick={() => setActiveTab('landing')}>ARCHLENS</div>
-               <div className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse shadow-[0_0_8px_#3fb950]" />
+          <div className="w-56 bg-[#010409] flex flex-col border-r border-[#30363d] shrink-0 z-50">
+            <div className="p-4 flex items-center gap-2 border-b border-[#30363d]">
+               <div className="text-[#58a6ff] font-black text-lg tracking-tight cursor-pointer" onClick={() => setActiveTab('landing')}>ARCHLENS</div>
+               <div className="w-2 h-2 rounded-full bg-green-500" />
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-8 space-y-10">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-4 space-y-4">
                {(['Intelligence', 'Engineering', 'Logic', 'Tactical'] as const).map(cat => (
-                 <div key={cat} className="space-y-3">
-                    <h3 className="px-4 text-[9px] font-black text-[#484f58] uppercase tracking-[0.4em] mb-4 border-l-2 border-transparent">{cat} Tier</h3>
-                    <div className="space-y-1">
+                 <div key={cat} className="space-y-1">
+                    <h3 className="px-3 text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-2">{cat} TIER</h3>
+                    <div className="space-y-0.5">
                        {NAV_ITEMS.filter(item => item.category === cat).map(item => (
                          <button 
                            key={item.id}
                            onClick={() => setActiveTab(item.id)}
-                           className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group relative ${
+                           className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-all text-left ${
                              activeTab === item.id 
-                               ? 'bg-[#2f81f7] text-white shadow-2xl shadow-[#2f81f733] ring-1 ring-white/20' 
-                               : 'text-[#8b949e] hover:text-white hover:bg-white/5'
+                               ? 'bg-[#1f6feb] text-white' 
+                               : 'text-gray-400 hover:text-white hover:bg-[#21262d]'
                            }`}
                          >
-                           <div className={`transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110 group-hover:rotate-3'}`}>
+                           <div className="w-4 h-4 shrink-0">
                              {item.icon}
                            </div>
-                           <span className={`text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === item.id ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>
+                           <span className="text-xs font-medium uppercase tracking-wide">
                              {item.label}
                            </span>
-                           {activeTab === item.id && (
-                             <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                           )}
                          </button>
                        ))}
                     </div>
@@ -342,14 +334,12 @@ const App: React.FC = () => {
                ))}
             </div>
 
-            <div className="p-6 border-t border-white/5 bg-[#050505]/40 mt-auto">
-               <div className="p-4 bg-[#2f81f70a] border border-[#2f81f722] rounded-2xl flex items-center gap-4 group cursor-pointer" onClick={() => setIsUpgradeModalOpen(true)}>
-                  <div className="w-10 h-10 rounded-xl bg-[#2f81f715] flex items-center justify-center text-[#2f81f7] group-hover:scale-110 transition-transform">
-                     <RocketIcon className="w-5 h-5" />
-                  </div>
+            <div className="p-3 border-t border-[#30363d]">
+               <div className="p-3 bg-[#161b22] border border-[#30363d] rounded-lg flex items-center gap-2 cursor-pointer hover:border-[#58a6ff]/50 transition-all" onClick={() => setIsUpgradeModalOpen(true)}>
+                  <RocketIcon className="w-4 h-4 text-[#58a6ff]" />
                   <div>
-                     <div className="text-[10px] font-black text-white uppercase tracking-tight">Upgrade Available</div>
-                     <div className="text-[9px] text-[#8b949e] font-bold uppercase tracking-widest">PROVISION ENTERPRISE</div>
+                     <div className="text-xs font-bold text-white">Upgrade</div>
+                     <div className="text-[10px] text-gray-500">Enterprise Plan</div>
                   </div>
                </div>
             </div>
@@ -357,7 +347,7 @@ const App: React.FC = () => {
         )}
 
         <main className="flex-1 flex flex-col min-0 overflow-hidden relative">
-          {activeTab === 'landing' ? <LandingPage onGetStarted={() => setActiveTab('dashboard')} onViewSpecs={() => setActiveTab('specs')} /> :
+          {activeTab === 'landing' ? <HeroLanding onNavigate={setActiveTab as any} /> :
            activeTab === 'specs' ? <SpecsView onBack={() => setActiveTab('landing')} onInitialize={() => setActiveTab('dashboard')} /> :
            activeTab === 'citadel' ? <StrategicCitadel codebase={codebase} /> :
            activeTab === 'forge' ? <StructuralForge codebase={codebase} /> :

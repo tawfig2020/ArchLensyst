@@ -12,15 +12,21 @@ import * as gemini from "./geminiService";
 import { wasmParser } from "./wasmParserService";
 
 export class CodebaseRAGService {
-  private static instance: CodebaseRAGService;
-  private graphNodes: DependencyNode[] = [];
-  private graphLinks: DependencyLink[] = [];
-  private isIndexing: boolean = false;
+  private static instance: CodebaseRAGService | undefined;
+  private graphNodes: DependencyNode[];
+  private graphLinks: DependencyLink[];
+  private isIndexing: boolean;
   
-  private blastRadiusCache: Map<string, CacheMetadata> = new Map();
-  private metadataCache: Map<string, CacheMetadata> = new Map();
+  private blastRadiusCache: Map<string, CacheMetadata>;
+  private metadataCache: Map<string, CacheMetadata>;
   
-  private constructor() {}
+  private constructor() {
+    this.graphNodes = [];
+    this.graphLinks = [];
+    this.isIndexing = false;
+    this.blastRadiusCache = new Map();
+    this.metadataCache = new Map();
+  }
 
   public static getInstance(): CodebaseRAGService {
     if (!CodebaseRAGService.instance) {

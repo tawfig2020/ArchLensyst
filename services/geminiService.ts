@@ -20,7 +20,11 @@ import {
   StructuralAuditReport, FederatedAuditReport
 } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Use import.meta.env for Vite (browser-compatible)
+// If no API key is set, use a placeholder to prevent initialization errors
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '';
+
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null as any;
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
   try {
@@ -56,7 +60,7 @@ export async function performFederatedMeshAudit(files: CodeFile[]): Promise<Fede
                   serviceId: { type: Type.STRING },
                   endpoint: { type: Type.STRING },
                   method: { type: Type.STRING },
-                  status: { type: Type.STRING, enum: ['stable', 'deprecated', 'breaking', 'internal'] },
+                  status: { type: Type.STRING, enum: ["stable", "deprecated", "breaking", "internal"] },
                   complianceScore: { type: Type.NUMBER },
                   driftReason: { type: Type.STRING }
                 }
@@ -92,7 +96,7 @@ export async function runSimulatedTestSuite(files: CodeFile[], proposal: string)
                 type: Type.OBJECT,
                 properties: {
                   suite: { type: Type.STRING },
-                  status: { type: Type.STRING, enum: ['passed', 'failed', 'skipped'] },
+                  status: { type: Type.STRING, enum: ["passed", "failed", "skipped"] },
                   coverage: { type: Type.NUMBER },
                   error: { type: Type.STRING }
                 }
@@ -148,7 +152,7 @@ export async function indexFile(file: CodeFile): Promise<{ metadata: ParsedMetad
                 securityVulnerabilityCount: { type: Type.NUMBER }
               }
             },
-            tier: { type: Type.STRING, enum: ['Architectural', 'Module', 'Implementation', 'Infrastructure'] },
+            tier: { type: Type.STRING, enum: ["Architectural", "Module", "Implementation", "Infrastructure"] },
             criticality: { type: Type.NUMBER }
           }
         }
@@ -351,7 +355,7 @@ export const generateSocraticChallenge = async (file: CodeFile, persona: Develop
             options: { type: Type.ARRAY, items: { type: Type.STRING } },
             correctAnswer: { type: Type.NUMBER },
             explanation: { type: Type.STRING },
-            complexity: { type: Type.STRING, enum: ['Junior', 'Senior', 'Architect'] }
+            complexity: { type: Type.STRING, enum: ["Junior", "Senior", "Architect"] }
           }
         }
       }
@@ -394,7 +398,7 @@ export const performStructuralAudit = async (files: CodeFile[]): Promise<Structu
                 properties: {
                   id: { type: Type.STRING },
                   category: { type: Type.STRING },
-                  impact: { type: Type.STRING, enum: ['Low', 'Medium', 'High'] },
+                  impact: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
                   description: { type: Type.STRING }
                 }
               }
@@ -426,7 +430,7 @@ export const performSecurityAudit = async (files: CodeFile[]): Promise<SecurityA
                 properties: {
                   id: { type: Type.STRING },
                   type: { type: Type.STRING },
-                  severity: { type: Type.STRING, enum: ['error', 'warning', 'info'] },
+                  severity: { type: Type.STRING, enum: ["error", "warning", "info"] },
                   message: { type: Type.STRING },
                   file: { type: Type.STRING },
                   line: { type: Type.NUMBER },
@@ -522,7 +526,7 @@ export const performContextConfidenceAudit = async (files: CodeFile[]): Promise<
                 properties: {
                   module: { type: Type.STRING },
                   reason: { type: Type.STRING },
-                  reviewPriority: { type: Type.STRING, enum: ['Critical', 'High', 'Medium', 'Low'] }
+                  reviewPriority: { type: Type.STRING, enum: ["\"Critical\"", "\"High\"", "\"Medium\"", "\"Low\""] }
                 }
               }
             }
@@ -547,7 +551,7 @@ export const analyzeLibraryInvariants = async (pkg: string, version: string, rul
           properties: {
             packageName: { type: Type.STRING },
             version: { type: Type.STRING },
-            structuralRisk: { type: Type.STRING, enum: ['Low', 'Medium', 'High'] },
+            structuralRisk: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
             invariantsCheck: {
               type: Type.OBJECT,
               properties: {
@@ -655,7 +659,7 @@ export const performReliabilityAudit = async (files: CodeFile[]): Promise<Reliab
                   type: { type: Type.STRING },
                   file: { type: Type.STRING },
                   message: { type: Type.STRING },
-                  severity: { type: Type.STRING, enum: ['error', 'warning'] }
+                  severity: { type: Type.STRING, enum: ["error", "warning"] }
                 }
               }
             }
@@ -690,7 +694,7 @@ export const performPerformanceAudit = async (files: CodeFile[]): Promise<Perfor
                     type: Type.OBJECT,
                     properties: {
                       complexity: { type: Type.STRING },
-                      resourceDrain: { type: Type.STRING, enum: ['low', 'medium', 'high', 'critical'] },
+                      resourceDrain: { type: Type.STRING, enum: ["low", "medium", "high", "critical"] },
                       bottleneckReason: { type: Type.STRING },
                       maxSafeConcurrency: { type: Type.NUMBER }
                     }
@@ -833,7 +837,7 @@ export const performFairnessAudit = async (files: CodeFile[]): Promise<FairnessR
                   id: { type: Type.STRING },
                   type: { type: Type.STRING },
                   description: { type: Type.STRING },
-                  impactLevel: { type: Type.STRING, enum: ['Low', 'Medium', 'High', 'Critical'] },
+                  impactLevel: { type: Type.STRING, enum: ["Low", "Medium", "High", "Critical"] },
                   proxyVariables: { type: Type.ARRAY, items: { type: Type.STRING } },
                   recommendation: { type: Type.STRING }
                 }
@@ -953,7 +957,7 @@ export const performDueDiligenceAudit = async (files: CodeFile[]): Promise<DueDi
                 properties: {
                   category: { type: Type.STRING },
                   description: { type: Type.STRING },
-                  impact: { type: Type.STRING, enum: ['Low', 'Medium', 'High', 'Critical'] },
+                  impact: { type: Type.STRING, enum: ["Low", "Medium", "High", "Critical"] },
                   file: { type: Type.STRING },
                   line: { type: Type.NUMBER }
                 }
@@ -1164,7 +1168,7 @@ export const performCloudInfrastructureAudit = async (files: CodeFile[]): Promis
                     type: { type: Type.STRING },
                     resourceId: { type: Type.STRING },
                     message: { type: Type.STRING },
-                    severity: { type: Type.STRING, enum: ['error', 'warning'] }
+                    severity: { type: Type.STRING, enum: ["error", "warning"] }
                 }
               }
             }

@@ -87,16 +87,16 @@ const SecurityHub: React.FC<Props> = ({ codebase }) => {
   }, [report, codebase]);
 
   return (
-    <div className="flex-1 bg-[#050505] p-10 overflow-y-auto space-y-12 animate-in fade-in duration-700 pb-32 selection:bg-[#f8514933]">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[#30363d] pb-10">
+    <div className="flex-1 bg-[#0d1117] p-6 overflow-y-auto pb-44">
+      <header className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Security <span className="text-[#f85149]">Shield</span></h2>
-          <p className="text-[#8b949e] max-w-2xl font-medium mt-4 italic">Zero-Trust Suggestion Guard. Intercepting SQLi, XSS, and hardcoded secrets before they commit to the logical graph.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">SECURITY <span className="text-[#f85149]">SHIELD</span></h2>
+          <p className="text-gray-500 text-sm">Zero-Trust Suggestion Guard. Intercepting SQLi, XSS, and hardcoded secrets before they commit.</p>
         </div>
         {!report && !isScanning && (
           <button 
             onClick={handleRunSecurityAudit}
-            className="bg-[#f85149] text-white px-12 py-5 rounded-[30px] font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#f8514933]"
+            className="bg-[#f85149] hover:bg-[#da3633] text-white px-6 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             RUN DEEP SECURITY SCAN
           </button>
@@ -104,85 +104,85 @@ const SecurityHub: React.FC<Props> = ({ codebase }) => {
       </header>
 
       {report ? (
-        <div className="space-y-12 animate-in slide-in-from-bottom-5 duration-700">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="bg-[#161b22] p-8 rounded-[40px] border border-white/5 space-y-4 group hover:border-[#3fb95033] transition-all">
-               <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2"><ShieldIcon className="w-3 h-3" /> Trust Baseline</div>
-               <div className="text-5xl font-black italic text-[#3fb950]">{report.score}%</div>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-green-500/30 transition-all">
+               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2"><ShieldIcon className="w-3 h-3" /> Trust Baseline</div>
+               <div className="text-2xl font-black text-green-400">{report.score}%</div>
             </div>
-            <div className="bg-[#161b22] p-8 rounded-[40px] border border-white/5 space-y-4 group hover:border-[#d2992233] transition-all">
-               <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2"><LockIcon className="w-3 h-3" /> Secrets Intercepted</div>
-               <div className="text-5xl font-black italic text-[#d29922]">{report.leakedSecrets.length}</div>
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-amber-500/30 transition-all">
+               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2"><LockIcon className="w-3 h-3" /> Secrets Intercepted</div>
+               <div className="text-2xl font-black text-amber-400">{report.leakedSecrets.length}</div>
             </div>
-            <div className="bg-[#161b22] p-8 rounded-[40px] border border-white/5 space-y-4 group hover:border-[#f8514933] transition-all">
-               <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2"><AlertIcon className="w-3 h-3" /> Critical Breaches</div>
-               <div className="text-5xl font-black italic text-[#f85149]">{report.vulnerabilities.filter(v => v.severity === 'error').length}</div>
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-red-500/30 transition-all">
+               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2"><AlertIcon className="w-3 h-3" /> Critical Breaches</div>
+               <div className="text-2xl font-black text-red-400">{report.vulnerabilities.filter(v => v.severity === 'error').length}</div>
             </div>
-             <div className="bg-[#161b22] p-8 rounded-[40px] border border-white/5 space-y-4 group hover:border-[#2f81f733] transition-all">
-               <div className="text-[10px] font-black text-[#8b949e] uppercase tracking-widest flex items-center gap-2"><GraphIcon className="w-3 h-3" /> Attack Surface</div>
-               <div className="text-5xl font-black italic text-[#2f81f7]">Visualized</div>
+             <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-blue-500/30 transition-all">
+               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2"><GraphIcon className="w-3 h-3" /> Attack Surface</div>
+               <div className="text-2xl font-black text-blue-400">Visualized</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-             <div className="space-y-6">
-                <h3 className="text-[12px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2"><GraphIcon className="w-4 h-4 text-[#2f81f7]" /> Attack Surface Mesh</h3>
-                <div className="bg-[#0d1117] border border-[#30363d] rounded-[40px] p-6 flex justify-center overflow-hidden">
-                   <svg ref={svgRef} width="600" height="400" className="opacity-80" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             <div className="space-y-4">
+                <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2"><GraphIcon className="w-3 h-3" /> Attack Surface Mesh</h3>
+                <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 flex justify-center overflow-hidden">
+                   <svg ref={svgRef} width="500" height="300" className="opacity-80" />
                 </div>
                 
-                <h3 className="text-[12px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2 mt-10"><AlertIcon className="w-4 h-4 text-[#f85149]" /> Vulnerability Ledger</h3>
-                <div className="space-y-4">
+                <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mt-4"><AlertIcon className="w-3 h-3" /> Vulnerability Ledger</h3>
+                <div className="space-y-3">
                    {report.vulnerabilities.map((v, i) => (
-                      <div key={i} className={`p-8 rounded-[35px] border flex flex-col gap-4 relative overflow-hidden transition-all hover:bg-white/5 ${
-                        v.severity === 'error' ? 'bg-[#f851490a] border-[#f8514933]' : 'bg-[#d299220a] border-[#d2992233]'
+                      <div key={i} className={`p-4 rounded-lg border flex flex-col gap-3 transition-all ${
+                        v.severity === 'error' ? 'bg-red-500/5 border-red-500/20' : 'bg-amber-500/5 border-amber-500/20'
                       }`}>
                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-4">
-                               <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border ${
-                                  v.severity === 'error' ? 'text-[#f85149] bg-[#f8514911] border-[#f8514922]' : 'text-[#d29922] bg-[#d2992211] border-[#d2992222]'
+                            <div className="flex items-center gap-3">
+                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                  v.severity === 'error' ? 'text-red-400 bg-red-500/10' : 'text-amber-400 bg-amber-500/10'
                                }`}>
-                                  <ShieldIcon />
+                                  <ShieldIcon className="w-4 h-4" />
                                </div>
                                <div>
-                                  <div className="text-[9px] font-black uppercase tracking-widest opacity-60">{v.type} • CWE-{v.cwe || 'Unknown'}</div>
-                                  <h4 className="text-lg font-black text-white italic tracking-tight">{v.message}</h4>
+                                  <div className="text-[10px] text-gray-500 uppercase">{v.type} • CWE-{v.cwe || 'Unknown'}</div>
+                                  <h4 className="text-sm font-bold text-white">{v.message}</h4>
                                </div>
                             </div>
                             <div className="text-right">
-                               <div className="text-[8px] font-black text-[#8b949e] uppercase">Blast Radius</div>
-                               <div className={`text-sm font-black italic ${v.blastRadius && v.blastRadius > 50 ? 'text-[#f85149]' : 'text-[#3fb950]'}`}>
+                               <div className="text-[8px] text-gray-600 uppercase">Blast Radius</div>
+                               <div className={`text-xs font-bold ${v.blastRadius && v.blastRadius > 50 ? 'text-red-400' : 'text-green-400'}`}>
                                   {v.blastRadius || 'N/A'}/100
                                </div>
                             </div>
                          </div>
-                         <p className="text-xs text-[#8b949e] leading-relaxed italic">Location: <span className="text-[#c9d1d9] font-mono uppercase font-bold">{v.file}:{v.line || '??'}</span></p>
-                         <div className="bg-[#050505] p-5 rounded-2xl border border-white/5 flex gap-4 items-center group">
-                            <div className="text-[#3fb950] shrink-0 group-hover:scale-110 transition-transform"><RocketIcon className="w-4 h-4" /></div>
-                            <div className="text-[11px] text-[#3fb950] font-bold italic leading-tight">FIX: "{v.recommendation}"</div>
+                         <p className="text-[10px] text-gray-500">Location: <span className="text-gray-300 font-mono">{v.file}:{v.line || '??'}</span></p>
+                         <div className="bg-[#0d1117] p-3 rounded-lg border border-[#30363d] flex gap-3 items-center">
+                            <RocketIcon className="w-3 h-3 text-green-400 shrink-0" />
+                            <div className="text-[10px] text-green-400">FIX: "{v.recommendation}"</div>
                          </div>
                       </div>
                    ))}
                 </div>
              </div>
 
-             <div className="space-y-10">
-                <div className="space-y-6">
-                   <h3 className="text-[12px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2"><LockIcon className="w-4 h-4 text-[#d29922]" /> Shadow Secret Interceptor</h3>
-                   <div className="space-y-4">
+             <div className="space-y-6">
+                <div className="space-y-4">
+                   <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2"><LockIcon className="w-3 h-3" /> Shadow Secret Interceptor</h3>
+                   <div className="space-y-3">
                       {report.leakedSecrets.map((s, i) => (
-                         <div key={i} className="bg-[#161b22] border border-[#30363d] p-6 rounded-[30px] space-y-4 group hover:border-[#d2992266] transition-all">
+                         <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 space-y-3 hover:border-amber-500/30 transition-all">
                             <div className="flex justify-between items-center">
-                               <div className="flex items-center gap-3">
-                                  <span className="text-[9px] font-black text-[#d29922] bg-[#d2992211] px-2 py-1 rounded border border-[#d2992233] uppercase">Identity: {s.type}</span>
-                                  <span className="text-[11px] font-black text-white italic tracking-tighter">{s.keyName}</span>
+                               <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase">Identity: {s.type}</span>
+                                  <span className="text-xs font-bold text-white">{s.keyName}</span>
                                </div>
-                               <span className="text-[10px] font-mono text-[#484f58] font-bold">Line {s.line}</span>
+                               <span className="text-[10px] font-mono text-gray-600">Line {s.line}</span>
                             </div>
-                            <div className="bg-[#050505] p-4 rounded-xl border border-white/5 font-mono text-[11px] text-[#f85149] tracking-[0.3em] overflow-x-auto custom-scrollbar">
+                            <div className="bg-[#0d1117] p-3 rounded-lg border border-[#30363d] font-mono text-[10px] text-red-400 overflow-x-auto">
                                {s.redactedValue}
                             </div>
-                            <button className="w-full bg-[#2f81f7] text-white py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2f81f722]">
+                            <button className="w-full bg-[#238636] hover:bg-[#2ea043] text-white py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-colors">
                                REFACTOR TO VAULT
                             </button>
                          </div>
@@ -190,32 +190,31 @@ const SecurityHub: React.FC<Props> = ({ codebase }) => {
                    </div>
                 </div>
 
-                <div className="bg-[#161b22] p-10 rounded-[50px] border border-white/5 space-y-6 relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#3fb950] opacity-5 blur-3xl" />
-                   <h3 className="text-xl font-black text-white italic uppercase tracking-tighter underline decoration-[#f85149] decoration-4 underline-offset-8">Zero-Trust Suggestion Core</h3>
-                   <p className="text-sm text-[#8b949e] leading-relaxed italic font-medium">
-                     The Immune System is currently scanning for **high-entropy logic blips**. Any suggestion containing regex with catastrophic backtracking risk or raw database drivers is automatically isolated.
+                <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 space-y-4">
+                   <h3 className="text-sm font-bold text-white">Zero-Trust Suggestion Core</h3>
+                   <p className="text-xs text-gray-500 leading-relaxed">
+                     The Immune System is currently scanning for high-entropy logic blips. Any suggestion containing regex with catastrophic backtracking risk or raw database drivers is automatically isolated.
                    </p>
-                   <div className="flex items-center gap-4 p-4 bg-[#3fb9500a] border border-[#3fb95022] rounded-3xl">
-                      <div className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse"></div>
-                      <span className="text-[10px] font-black text-[#3fb950] uppercase tracking-widest">Enclave Status: SECURE</span>
+                   <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-[10px] font-semibold text-green-400 uppercase tracking-wider">Enclave Status: SECURE</span>
                    </div>
                 </div>
              </div>
           </div>
         </div>
       ) : isScanning ? (
-        <div className="h-[50vh] flex flex-col items-center justify-center space-y-8">
-           <div className="w-16 h-16 border-4 border-[#f85149]/30 border-t-[#f85149] rounded-full animate-spin" />
-           <div className="text-center space-y-2">
-              <div className="text-[12px] font-black text-[#f85149] uppercase tracking-[0.4em] animate-pulse">Scanning Code Entropy...</div>
-              <p className="text-[10px] text-[#484f58] uppercase font-bold">Verifying logical nodes against OWASP L3 compliance</p>
+        <div className="h-64 flex flex-col items-center justify-center space-y-4">
+           <div className="w-10 h-10 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+           <div className="text-center space-y-1">
+              <div className="text-xs font-semibold text-red-400 uppercase tracking-wider">Scanning Code Entropy...</div>
+              <p className="text-[10px] text-gray-600">Verifying logical nodes against OWASP L3 compliance</p>
            </div>
         </div>
       ) : (
-        <div className="h-[40vh] flex flex-col items-center justify-center text-center space-y-8 opacity-40 group">
-           <div className="scale-[4] text-[#30363d] group-hover:text-[#f85149] transition-colors duration-500 animate-bounce duration-[3000ms]"><ShieldIcon /></div>
-           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#484f58]">Initialize deep security audit to anchor your defense baseline.</p>
+        <div className="h-64 flex flex-col items-center justify-center text-center space-y-4">
+           <ShieldIcon className="w-12 h-12 text-gray-700" />
+           <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Initialize deep security audit to anchor your defense baseline.</p>
         </div>
       )}
     </div>
