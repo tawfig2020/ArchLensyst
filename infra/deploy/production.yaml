@@ -1,0 +1,114 @@
+# ArchLens Production Deployment Architecture
+# Multi-Cloud Ready Configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: archlens-deploy-config
+  namespace: archlens
+data:
+  deployment.yaml: |
+    production:
+      primary_region: aws-us-east-1
+      secondary_region: gcp-europe-west3
+      cdn: cloudflare-lambda-edge
+
+      clusters:
+        parsing_cluster:
+          provider: aws-eks
+          instance_type: m7g.xlarge  # ARM Graviton
+          min_nodes: 3
+          max_nodes: 20
+          labels:
+            workload: parsing
+
+        ai_cluster:
+          provider: gcp-gke
+          instance_type: a2-highgpu-1g  # A100 GPU
+          min_nodes: 1
+          max_nodes: 5
+          labels:
+            workload: ai-inference
+
+        db_cluster:
+          postgres: aurora-postgresql-16
+          mongodb: mongodb-atlas-m30
+          redis: elasticache-r7g
+          neo4j: neo4j-aura-professional
+
+      disaster_recovery:
+        rto_minutes: 15
+        rpo_minutes: 5
+        backup_strategy: hourly-encrypted-snapshots
+        replication: active-passive-cross-region
+
+      networking:
+        vpc_cidr: "10.0.0.0/16"
+        service_mesh: istio
+        ingress: nginx-ingress
+        dns: route53-failover
+
+      scaling:
+        api_gateway: { min: 2, max: 10, cpu_target: 70 }
+        cognitive:    { min: 2, max: 8,  cpu_target: 60 }
+        parser:       { min: 3, max: 20, cpu_target: 60 }
+        citadel:      { min: 2, max: 6,  cpu_target: 70 }
+        vault:        { min: 2, max: 4,  cpu_target: 80 }
+        audit:        { min: 2, max: 6,  cpu_target: 70 }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: archlens-ingress
+  namespace: archlens
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  tls:
+    - hosts:
+        - api.archlens.io
+      secretName: archlens-tls
+  rules:
+    - host: api.archlens.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: archlens-zero-trust
+  namespace: archlens
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: archlens
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: archlens
+    - to:  # Allow external DNS and HTTPS
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 443
+          protocol: TCP

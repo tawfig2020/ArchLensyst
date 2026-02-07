@@ -1,0 +1,119 @@
+# ArchLens Strategic Systems — Render.com Blueprint
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ─── Go API Gateway (Primary Backend) ───────────────────────────────────────
+  - type: web
+    name: archlens-api-gateway
+    runtime: docker
+    dockerfilePath: ./server/api-gateway/Dockerfile
+    dockerContext: ./server/api-gateway
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_PORT
+        value: "8000"
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: archlens
+      - key: REDIS_ADDR
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        sync: false
+      - key: COGNITIVE_SERVICE_URL
+        sync: false
+      - key: CITADEL_SERVICE_URL
+        sync: false
+      - key: VAULT_SERVICE_URL
+        sync: false
+      - key: MONGO_URI
+        sync: false
+
+  # ─── Python Cognitive Service ────────────────────────────────────────────────
+  - type: web
+    name: archlens-cognitive
+    runtime: docker
+    dockerfilePath: ./server/cognitive/Dockerfile
+    dockerContext: ./server/cognitive
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: GOOGLE_AI_KEY
+        sync: false
+      - key: APP_ENV
+        value: production
+      - key: REDIS_ADDR
+        sync: false
+      - key: ELASTICSEARCH_URL
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        sync: false
+
+  # ─── Go Strategic Citadel ────────────────────────────────────────────────────
+  - type: web
+    name: archlens-citadel
+    runtime: docker
+    dockerfilePath: ./server/citadel/Dockerfile
+    dockerContext: ./server/citadel
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_PORT
+        value: "8200"
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: archlens
+      - key: REDIS_ADDR
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+
+  # ─── Go Sovereign Vault ─────────────────────────────────────────────────────
+  - type: web
+    name: archlens-vault
+    runtime: docker
+    dockerfilePath: ./server/vault-service/Dockerfile
+    dockerContext: ./server/vault-service
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_PORT
+        value: "8300"
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DATABASE
+        value: archlens
+      - key: REDIS_ADDR
+        sync: false

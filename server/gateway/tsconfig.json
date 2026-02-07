@@ -1,0 +1,9 @@
+{
+  "extends": "@archlens/config/tsconfig/node",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true
+  },
+  "include": ["src"]
+}

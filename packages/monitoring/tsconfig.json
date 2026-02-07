@@ -1,0 +1,8 @@
+{
+  "extends": "@archlens/config/tsconfig/react",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src"]
+}

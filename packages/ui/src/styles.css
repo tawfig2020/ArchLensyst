@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --citadel-bg: 2 2 2;
+    --citadel-surface: 13 17 23;
+    --citadel-elevated: 22 27 34;
+    --citadel-border: 48 54 61;
+    --sentinel-blue: 47 129 247;
+    --invariant-green: 63 185 80;
+    --breach-red: 248 81 73;
+    --caution-amber: 210 153 34;
+  }
+
+  * {
+    @apply border-citadel-border;
+  }
+
+  body {
+    @apply bg-citadel-surface text-gray-200 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-glass-citadel backdrop-blur-citadel border border-citadel-border rounded-citadel;
+  }
+
+  .glass-elevated {
+    @apply bg-glass-surface backdrop-blur-sentinel border border-citadel-border rounded-citadel shadow-citadel;
+  }
+
+  .sentinel-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sentinel-blue focus-visible:ring-offset-2 focus-visible:ring-offset-citadel-bg;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-citadel-border rounded-full hover:bg-citadel-border-hover;
+  }
+}

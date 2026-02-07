@@ -1,0 +1,328 @@
+x-common: &common
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # ──────────────────────────────────────────────
+  # Infrastructure
+  # ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    <<: *common
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: archlens
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-archlens_dev}
+      POSTGRES_DB: archlens
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/db/migrations/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archlens"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    <<: *common
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: archlens
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-archlens_dev}
+    volumes:
+      - mongo_data:/data/db
+      - ./infra/db/migrations/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+    command: ["mongod", "--bind_ip_all"]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh -u archlens -p ${MONGO_PASSWORD:-archlens_dev} --authenticationDatabase admin --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  redis:
+    image: redis/redis-stack:latest
+    <<: *common
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    <<: *common
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green\|yellow"'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  neo4j:
+    image: neo4j:5-community
+    <<: *common
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-archlens_dev}
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+    volumes:
+      - neo4j_data:/data
+
+  kafka:
+    image: apache/kafka:latest
+    <<: *common
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: archlens-kafka-cluster-001
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
+    healthcheck:
+      test: /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  # ──────────────────────────────────────────────
+  # Security
+  # ──────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    <<: *common
+    ports:
+      - "8080:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/archlens
+      KC_DB_USERNAME: archlens
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-archlens_dev}
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  vault:
+    image: hashicorp/vault:1.15
+    <<: *common
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: archlens-dev-token
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/data
+
+  # ──────────────────────────────────────────────
+  # Observability
+  # ──────────────────────────────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    <<: *common
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    image: prom/prometheus:v2.49.0
+    <<: *common
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:10.3.0
+    <<: *common
+    ports:
+      - "3100:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  loki:
+    image: grafana/loki:2.9.0
+    <<: *common
+    ports:
+      - "3200:3100"
+    volumes:
+      - loki_data:/loki
+
+  # ──────────────────────────────────────────────
+  # ArchLens Services
+  # ──────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./server/api-gateway
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8000
+      - POSTGRES_DSN=postgres://archlens:${POSTGRES_PASSWORD:-archlens_dev}@postgres:5432/archlens?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - KEYCLOAK_URL=http://keycloak:8080
+      - VAULT_ADDR=http://vault:8200
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - COGNITIVE_SERVICE_URL=http://cognitive-service:8100
+      - CITADEL_SERVICE_URL=http://citadel-service:8200
+      - VAULT_SERVICE_URL=http://vault-service:8300
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  citadel-service:
+    build:
+      context: ./server/citadel
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "8201:8200"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8200
+      - POSTGRES_DSN=postgres://archlens:${POSTGRES_PASSWORD:-archlens_dev}@postgres:5432/archlens?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  vault-service:
+    build:
+      context: ./server/vault-service
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "8300:8300"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8300
+      - MONGO_URI=mongodb://archlens:${MONGO_PASSWORD:-archlens_dev}@mongodb:27017/archlens?authSource=admin
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=archlens-dev-token
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      vault:
+        condition: service_started
+
+  cognitive-service:
+    build:
+      context: ./server/cognitive
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "8100:8100"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8100
+      - REDIS_ADDR=redis:6379
+      - GOOGLE_AI_KEY=${GOOGLE_AI_KEY}
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  parser-service:
+    build:
+      context: ./server/parser
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "50051:50051"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:9092
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      kafka:
+        condition: service_started
+
+  audit-service:
+    build:
+      context: ./server/audit
+      dockerfile: Dockerfile
+    <<: *common
+    ports:
+      - "8400:8400"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8400
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-archlens_dev}
+      - KAFKA_BROKERS=kafka:9092
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      neo4j:
+        condition: service_started
+      kafka:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  es_data:
+  neo4j_data:
+  kafka_data:
+  vault_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:

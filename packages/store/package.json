@@ -1,0 +1,29 @@
+{
+  "name": "@archlens/store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zustand-based global state management with middleware",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "zustand": "^5.0.0",
+    "immer": "^10.1.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0"
+  },
+  "devDependencies": {
+    "@archlens/config": "workspace:*",
+    "@archlens/types": "workspace:*",
+    "@types/react": "^18.3.0",
+    "typescript": "^5.7.3"
+  }
+}

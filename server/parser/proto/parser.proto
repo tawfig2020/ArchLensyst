@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package archlens.parser;
+
+service ParserService {
+  // Parse a single file and return its AST
+  rpc ParseFile (ParseRequest) returns (ParseResponse);
+
+  // Stream parse results for multiple files
+  rpc ParseBatch (stream ParseRequest) returns (stream ParseResponse);
+
+  // Extract code skeleton (public API surface)
+  rpc ExtractSkeleton (ParseRequest) returns (SkeletonResponse);
+
+  // Get supported languages
+  rpc GetSupportedLanguages (Empty) returns (LanguagesResponse);
+}
+
+message Empty {}
+
+message ParseRequest {
+  string file_id = 1;
+  string file_path = 2;
+  string content = 3;
+  string language = 4;
+}
+
+message ParseResponse {
+  string file_id = 1;
+  string file_path = 2;
+  string language = 3;
+  ASTNode root = 4;
+  repeated Dependency dependencies = 5;
+  repeated Symbol exports = 6;
+  ParseMetrics metrics = 7;
+  string error = 8;
+}
+
+message ASTNode {
+  string kind = 1;
+  string text = 2;
+  uint32 start_line = 3;
+  uint32 start_col = 4;
+  uint32 end_line = 5;
+  uint32 end_col = 6;
+  repeated ASTNode children = 7;
+}
+
+message Dependency {
+  string source = 1;
+  string target = 2;
+  string dep_type = 3;  // import, require, extends, implements
+  uint32 line = 4;
+}
+
+message Symbol {
+  string name = 1;
+  string kind = 2;  // function, class, interface, type, variable
+  string visibility = 3;  // public, private, protected
+  uint32 line = 4;
+  string signature = 5;
+}
+
+message ParseMetrics {
+  uint32 total_lines = 1;
+  uint32 code_lines = 2;
+  uint32 comment_lines = 3;
+  uint32 blank_lines = 4;
+  uint32 complexity = 5;
+  double parse_time_ms = 6;
+}
+
+message SkeletonResponse {
+  string file_id = 1;
+  string file_path = 2;
+  string skeleton = 3;  // Simplified code structure
+  repeated Symbol public_api = 4;
+}
+
+message LanguagesResponse {
+  repeated LanguageInfo languages = 1;
+}
+
+message LanguageInfo {
+  string name = 1;
+  repeated string extensions = 2;
+  string parser_version = 3;
+}

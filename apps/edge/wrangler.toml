@@ -1,0 +1,18 @@
+name = "archlens-edge"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ENVIRONMENT = "production"
+API_ORIGIN = "https://api.archlens.dev"
+APP_ORIGIN = "https://app.archlens.dev"
+
+# KV Namespace for edge caching
+# [[kv_namespaces]]
+# binding = "ARCHLENS_CACHE"
+# id = "<YOUR_KV_NAMESPACE_ID>"
+
+# R2 bucket for static assets
+# [[r2_buckets]]
+# binding = "ASSETS"
+# bucket_name = "archlens-assets"

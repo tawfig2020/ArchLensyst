@@ -67,3 +67,26 @@ typings/
 dist/
 out/
 build/
+
+# Turborepo
+.turbo/
+
+# pnpm
+pnpm-lock.yaml
+
+# Storybook
+storybook-static/
+
+# Cloudflare
+.wrangler/
+.dev.vars
+
+# Bundle analysis
+stats.html
+stats.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

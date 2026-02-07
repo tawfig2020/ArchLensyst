@@ -1,0 +1,148 @@
+# ArchLens Prometheus Alerting Rules
+# Based on Four Golden Signals + custom ArchLens metrics
+
+groups:
+  # ── Four Golden Signals ──
+  - name: golden_signals
+    rules:
+      # Latency
+      - alert: HighP99Latency
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 latency above 2s for {{ $labels.service }}"
+
+      - alert: CriticalP99Latency
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "P99 latency above 5s for {{ $labels.service }}"
+
+      # Traffic
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total[5m])) by (service) > 1000
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Request rate above 1000 rps for {{ $labels.service }}"
+
+      # Errors
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Error rate above 1% for {{ $labels.service }}"
+
+      - alert: CriticalErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error rate above 5% for {{ $labels.service }}"
+
+      # Saturation
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU usage above 80% for {{ $labels.service }}"
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 512
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory usage above 512MB for {{ $labels.service }}"
+
+  # ── ArchLens Custom Metrics ──
+  - name: archlens_custom
+    rules:
+      - alert: PipelineStageFailing
+        expr: increase(archlens_pipeline_stage_failures_total[15m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pipeline stage {{ $labels.stage }} failing frequently"
+
+      - alert: DriftDetectionBacklog
+        expr: archlens_drift_scan_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Drift detection scan queue backlog above 100"
+
+      - alert: LedgerVerificationFailed
+        expr: archlens_ledger_verification_failures_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sovereign ledger integrity verification FAILED"
+
+      - alert: CircuitBreakerOpen
+        expr: archlens_circuit_breaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is OPEN"
+
+      - alert: DeadLetterQueueGrowing
+        expr: archlens_dlq_messages_total > 50
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dead letter queue has {{ $value }} messages"
+
+  # ── SLO Definitions ──
+  - name: archlens_slos
+    rules:
+      # API Availability SLO: 99.9%
+      - record: archlens:api_availability:ratio_5m
+        expr: 1 - (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])))
+
+      - alert: APIAvailabilitySLOBreach
+        expr: archlens:api_availability:ratio_5m < 0.999
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API availability below 99.9% SLO"
+
+      # Analysis Latency SLO: P95 < 30s
+      - record: archlens:analysis_p95_latency:seconds
+        expr: histogram_quantile(0.95, sum(rate(archlens_analysis_duration_seconds_bucket[5m])) by (le))
+
+      - alert: AnalysisLatencySLOBreach
+        expr: archlens:analysis_p95_latency:seconds > 30
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Analysis P95 latency exceeds 30s SLO"
+
+      # Drift Detection Freshness SLO: < 5min staleness
+      - record: archlens:drift_staleness:minutes
+        expr: (time() - archlens_last_drift_scan_timestamp) / 60
+
+      - alert: DriftFreshnessSLOBreach
+        expr: archlens:drift_staleness:minutes > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Drift detection data is {{ $value }}min stale (SLO: <5min)"

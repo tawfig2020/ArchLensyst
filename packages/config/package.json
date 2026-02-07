@@ -1,0 +1,15 @@
+{
+  "name": "@archlens/config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared configuration for ArchLens monorepo",
+  "files": ["tsconfig", "eslint", "tailwind"],
+  "exports": {
+    "./tsconfig/base": "./tsconfig/base.json",
+    "./tsconfig/react": "./tsconfig/react.json",
+    "./tsconfig/node": "./tsconfig/node.json",
+    "./eslint": "./eslint/index.js",
+    "./tailwind": "./tailwind/index.ts",
+    "./prettier": "./prettier/index.js"
+  }
+}

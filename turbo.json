@@ -1,0 +1,59 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "NODE_ENV",
+    "VITE_API_URL",
+    "VITE_WS_URL",
+    "VITE_SENTRY_DSN",
+    "VITE_GRAPHQL_ENDPOINT",
+    "REDIS_URL",
+    "CHROMATIC_PROJECT_TOKEN"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "vite.config.*"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "cache": true
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "outputs": ["coverage/**"]
+    },
+    "storybook:build": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"],
+      "cache": true
+    },
+    "storybook:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "analyze": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "chromatic": {
+      "dependsOn": ["storybook:build"],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}
